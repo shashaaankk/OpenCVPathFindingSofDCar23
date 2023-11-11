@@ -1,2 +1,2 @@
 
-from .corner_detection import corner_detection
+from .corner_detection import extract_lines_and_corner
