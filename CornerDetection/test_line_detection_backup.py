@@ -112,6 +112,7 @@ def hist(ax, img, channel, lb, ub):
     hist_channel_g = cv2.calcHist([img], [channel], None, [ub - lb], [lb, ub])
     ax.plot(hist_channel_g, color='green')
 
+
 def edge_detection(img):
     dst = cv2.Canny(
         img,
@@ -126,19 +127,13 @@ def edge_detection(img):
     # plt.show()
 
 
-def angle(x, y):
-    # return np.arccos(
-    return ((x[0] * y[0] + x[1] * y[1])
-        / (np.sqrt(x[0]**2 + y[0]**2) * np.sqrt(x[1]**2 + y[1]**2)))
-    # )
-
 def line_detection(gray_scale):
     print(img.shape)
     lines = cv2.HoughLinesP(gray_scale,
         rho=1,
         theta=np.pi / 90,
         threshold=100,
-        minLineLength=gray_scale.shape[0] / 10,
+        minLineLength=gray_scale.shape[0] / 5,
         maxLineGap=gray_scale.shape[0] / 10
     )
     # Sort lines based on confidence (line length)
@@ -156,6 +151,7 @@ def line_detection(gray_scale):
 
     # Extract the two most confident lines
     top_lines = [c0[0], c1[0]]
+
     plt.figure()
     plt.imshow(gray_scale, cmap='gray')
     if lines is None:
@@ -168,54 +164,80 @@ def line_detection(gray_scale):
 
     for l in top_lines:
         print(l)
-        print(angle(l[0,:2], l[0,2:]))
+        # print(angle(l[0,:2], l[0,2:]))
         plt.plot(l[0,::2], l[0,1::2], color='red', label='representatnts')
     rhos = []
 
     return np.array(top_lines)
+
+def find_intersection_point(point1, point2, point3, point4):
+    x1, y1 = point1
+    x2, y2 = point2
+    x3, y3 = point3
+    x4, y4 = point4
+
+    m1 = (y2 - y1) / (x2 - x1)
+    m2 = (y4 - y3) / (x4 - x3)
+
+    b1 = y1 - m1 * x1
+    b2 = y3 - m2 * x3
+
+    intersection_x = (b2 - b1) / (m1 - m2)
+    intersection_y = m1 * intersection_x + b1
+
+    return intersection_x, intersection_y
 
 def intersect_lines(l1, l2):
     '''
     line represented as (x1, y1, x2, y2)
     where (x1,y1) and (x2, y2) are points on the line.
     '''
-    v1 = l1[:2] - l1[2:]
-    v2 = l2[:2] - l2[2:]
 
-    A = np.array([- v1, v2])
-    b = l2[2:] - l1[2:]
+    return find_intersection_point(
+        l1[:2], l1[2:],
+        l2[:2], l2[2:]
+    )
 
-    t = np.linalg.solve(A, b)
-    print(l1[2:] + t[0] * v1)
-    print(l2[2:] + t[1] * v2)
+    # v1 = l1[:2] - l1[2:]
+    # v2 = l2[:2] - l2[2:]
+    # 
+    # A = np.array([- v1, v2]).T
+    # b = l2[2:] - l1[2:]
+    # 
+    # t = np.linalg.solve(A, b)
+    # print(l1[2:] + t[0] * v1)
+    # print(l2[2:] + t[1] * v2)
+    # 
+    # x = l2[2:] + t[1] * v2
+    # plt.scatter(x[0], x[1])
 
-    x = l2[2:] + t[1] * v2
-    plt.scatter(x[0], x[1])
-
-    # return l2[2:] + t[1] * v2
 
 def noah_preproc(image):
-    retval, img_thresh = cv2.threshold(image[:, :, 1], 150, 255, cv2.THRESH_BINARY)
+    retval, img_thresh = cv2.threshold(image[:, :, 1], 170, 255, cv2.THRESH_BINARY)
 
 
     # erosion
-    kernel = np.ones((5, 5), np.uint8) 
+    n = image.shape[0] // 10
+    kernel = np.ones((n, n), np.uint8) 
     
     # Using cv2.erode() method  
-    image_eroded = cv2.erode(img_thresh, kernel, iterations=5)
+    image_eroded = cv2.erode(img_thresh, kernel)
 
 
     #dilation
-    img_dilation = cv2.dilate(image_eroded, kernel, iterations=5)
+    img_dilation = cv2.dilate(image_eroded, kernel)
 
 
     # edge thining
-    thinned_image = thinning_zhangsuen(img_dilation)
+    thinned_image = thinning_zhangsuen(img_thresh)
 
     return thinned_image
 
-img = cv2.imread('frame1.png')
-# # img = cv2.imread('frameLshape.jpg')
+
+# img = cv2.imread('../LD_DistanceToCenter/testImg01.jpg')
+# img = cv2.imread('frame1.png')
+# img = img[10:, 10:]
+img = cv2.imread('frameLshape.jpg')
 # img = cv2.resize(img, (256, 512))
 # img = threshold_rgb(img)
 # # edge_detection(img)
@@ -237,8 +259,9 @@ img_bin[img > 1] = 255
 
 print('after thresholding', img.shape, img.dtype)
 
-# lines = line_detection(img)
+lines = line_detection(img)
+intersection_point = intersect_lines(lines[0, 0], lines[1, 0])
 
-# intersection_point = intersect_lines(lines[0, 0], lines[1, 0])
-
+print(intersection_point)
+plt.scatter(intersection_point[0], intersection_point[1], color='green')
 plt.show()
