@@ -147,7 +147,12 @@ def preprocess(image):
 
 def extract_lines_and_corner(img: np.array):
     '''
-
+    Parameters:
+        img: RGB image as np.array (shape N x M x 3)
+    Returns:
+        a pair of
+        lines: 2 x 4 array with end points of the lines
+        corner: (2,) the detected corner point (intersection point of the lines)
     '''
     img = preprocess(img)
     img = cv2.dilate(img, np.ones((3, 3)))
@@ -176,5 +181,5 @@ if __name__ == '__main__':
 
     # plot corner
     plt.scatter(corner[0], corner[1], color='green')
-    plt.savefig(f'output/{img_name}')
+    plt.savefig(f'output/lines_and_corner_{img_name}')
     plt.show()
