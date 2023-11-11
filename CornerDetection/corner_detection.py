@@ -55,7 +55,7 @@ def thinning_zhangsuen(image):
 
     return skel
 
-def line_detection(gray_scale):
+def line_detection(gray_scale, angle_threshold = .5):
     print(img.shape)
     lines = cv2.HoughLinesP(gray_scale,
         rho=1,
@@ -76,9 +76,18 @@ def line_detection(gray_scale):
 
     c0 = lines[labels == 0]
     c1 = lines[labels == 1]
+    top_lines = []
+    top_lines.append(c0[0])
+    if len(c1) > 0:
+        v0 = np.array(c0[0][0][:2] - c0[0][0][2:])
+        v1 = np.array(c1[0][0][:2] - c1[0][0][2:])
 
-    # Extract the two most confident lines
-    top_lines = [c0[0], c1[0]]
+        print(v0)
+        inverse_angle = np.sum(v0 * v1) / (np.linalg.norm(v0) * np.linalg.norm(v1))
+        print('dotproduct', inverse_angle)
+        if np.abs(inverse_angle) < angle_threshold:
+            # Extract the two most confident lines
+            top_lines.append(c1[0])
 
     return np.array(top_lines)
 
@@ -135,17 +144,29 @@ def extract_lines_and_corner(img: np.array):
     '''
     Parameters:
         img: RGB image as np.array (shape N x M x 3)
+    
     Returns:
+
+    If a corner is detected:
         a pair of
         lines: 2 x 4 array with end points of the lines
         corner: (2,) the detected corner point (intersection point of the lines)
+
+    If no corner is detected:
+        a pair of
+        lines: 1 x 4 array with end points of one line
+        corner: None
+        
     '''
     img = preprocess(img)
     img = cv2.dilate(img, np.ones((3, 3)))
 
     lines = line_detection(img)
-    intersection_point = intersect_lines(lines[0, 0], lines[1, 0])
-
+    
+    intersection_point = None
+    if len(lines) > 1:
+        intersection_point = intersect_lines(lines[0, 0], lines[1, 0])
+    
     return lines[:, 0, :], intersection_point
 
 
