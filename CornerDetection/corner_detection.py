@@ -19,6 +19,7 @@ def merge_clusters(lines, labels, angle_threshold=0.5):
     c1 = lines[labels == 1]
     top_lines = []
     top_lines.append(c0[0])
+    inverse_angle = None
     if len(c1) > 0:
         v0 = np.array(c0[0][0][:2] - c0[0][0][2:])
         v1 = np.array(c1[0][0][:2] - c1[0][0][2:])
@@ -91,14 +92,13 @@ def line_detection(gray_scale, angle_threshold = .5):
     # Sort lines based on confidence (line length)
     lines = np.array(sorted(lines, key=lambda x: x[0, 2], reverse=True))
 
-    # plt.imshow(img)
+    # plt.imshow(gray_scale)
     # 
     # for l in lines:
     #     plt.plot(l[0,::2], l[0,1::2], color='blue')
     # 
     # plt.colorbar()
     # plt.show()
-    # lines = detector.detect(gray_scale)
     print(lines)
 
     labels = cluster_lines(lines)
@@ -139,14 +139,15 @@ def intersect_lines(l1, l2):
 def preprocess(image):
     retval, img = cv2.threshold(image[:, :, 1], 170, 255, cv2.THRESH_BINARY)
 
-    # erosion
-    n = image.shape[0] // 200
+
+    # erosion to reduce noise
+    n = image.shape[0] // 100
     kernel = np.ones((n, n), np.uint8)
     # Using cv2.erode() method
-    #img = cv2.erode(img, kernel, iterations=1)
+    img = cv2.erode(img, kernel, iterations=1)
 
-    # dilation
-    # img = cv2.dilate(img, kernel, iterations=2)
+    # dilation to close gaps
+    img = cv2.dilate(img, kernel, iterations=2)
 
     # edge thining
     img = thinning_zhangsuen(img)
@@ -192,7 +193,8 @@ if __name__ == '__main__':
     import os
 
     for img_name in os.listdir('data'):
-    # for img_name in ['frameLshape.jpg']:
+        print('Processing', img_name)
+        # for img_name in ['frame2.jpg']:
         # img_name = 'frameLshape3.jpg'
 
         img = cv2.imread(f'data/{img_name}')
