@@ -80,22 +80,6 @@ def line_detection(gray_scale):
     # Extract the two most confident lines
     top_lines = [c0[0], c1[0]]
 
-    plt.figure()
-    plt.imshow(gray_scale, cmap='gray')
-    if lines is None:
-        lines = []
-        print('No lines!')
-    
-    for l in lines:
-        plt.plot(l[0,::2], l[0,1::2], color='blue', label='all')
-    
-
-    for l in top_lines:
-        print(l)
-        # print(angle(l[0,:2], l[0,2:]))
-        plt.plot(l[0,::2], l[0,1::2], color='red', label='representatnts')
-    rhos = []
-
     return np.array(top_lines)
 
 def find_intersection_point(point1, point2, point3, point4):
