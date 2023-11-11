@@ -176,13 +176,13 @@ def find_intersection_point(point1, point2, point3, point4):
     x3, y3 = point3
     x4, y4 = point4
 
-    m1 = (y2 - y1) / (x2 - x1)
-    m2 = (y4 - y3) / (x4 - x3)
+    m1 = (y2 - y1) / (x2 - x1 + 10e-4)
+    m2 = (y4 - y3) / (x4 - x3 + 10e-4)
 
     b1 = y1 - m1 * x1
     b2 = y3 - m2 * x3
 
-    intersection_x = (b2 - b1) / (m1 - m2)
+    intersection_x = (b2 - b1) / (m1 - m2 + 10e-4)
     intersection_y = m1 * intersection_x + b1
 
     return intersection_x, intersection_y
@@ -233,11 +233,12 @@ def noah_preproc(image):
 
     return thinned_image
 
+img_name = 'frame1.png'
 
 # img = cv2.imread('../LD_DistanceToCenter/testImg01.jpg')
-# img = cv2.imread('frame1.png')
-# img = img[10:, 10:]
-img = cv2.imread('frameLshape.jpg')
+img = cv2.imread(img_name)
+img = img[10:, 10:]
+# img = cv2.imread('frameLshape.jpg')
 # img = cv2.resize(img, (256, 512))
 # img = threshold_rgb(img)
 # # edge_detection(img)
@@ -264,4 +265,5 @@ intersection_point = intersect_lines(lines[0, 0], lines[1, 0])
 
 print(intersection_point)
 plt.scatter(intersection_point[0], intersection_point[1], color='green')
+fig.savefig('output')
 plt.show()
