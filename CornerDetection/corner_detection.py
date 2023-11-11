@@ -1,4 +1,7 @@
-"""For a usage example scroll down where it says
+"""
+For corner detection in an RGB image use `extract_lines_and_corner(img)`.
+
+For a usage example scroll down where it says
 ```
 if __name__ == '__main__':
     ...
@@ -9,7 +12,6 @@ if __name__ == '__main__':
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-
 from sklearn.cluster import KMeans
 
 def cluster_lines(lines):
