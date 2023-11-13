@@ -59,6 +59,7 @@ def detect_marker(frame: np.array):
     else:
         if len(markerIds) != 1 or len(markerIds[0]) != 1 or markerIds[0, 0] != 10:
             print(f'[Error] Detected marker {np.array(markerIds)}')
+            return None
 
         idxs = np.where(markerIds.flatten() == 10)
         corners = markerCorners[idxs[0][0]]
